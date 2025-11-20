@@ -1,0 +1,48 @@
+services:
+
+  db:
+    image: postgres:16
+    env_file:
+      - ".env"
+    environment:
+      POSTGRES_USER: "$DB_USER"
+      POSTGRES_PASSWORD: "$DB_PASSWORD"
+      POSTGRES_DB: "$DB_NAME"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: ["poetry", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    env_file:
+      - ".env"
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    environment:
+      APPSTATE: "dev"
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+    env_file:
+      - ".env"
+    depends_on:
+      - backend
+    environment:
+      APPSTATE: "dev"
+    networks:
+      - app-network
+
+volumes:
+  pg_data:
+
+networks:
+  app-network:
