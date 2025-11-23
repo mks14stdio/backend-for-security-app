@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import func
+from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.database.db import Base
@@ -13,9 +13,9 @@ class Article(Base):
 
     title: Mapped[str]
     content: Mapped[str]
-
-    order_index: Mapped[int]
     
+    test_pk: Mapped[int | None] = mapped_column(ForeignKey("tests.id"))
+
     created_on: Mapped[datetime] = mapped_column(default=func.now())
     updated_on: Mapped[datetime] = mapped_column(
         default=func.now(), onupdate=func.now()
