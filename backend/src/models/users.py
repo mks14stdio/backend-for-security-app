@@ -14,7 +14,7 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(default=True)
     hashed_password: Mapped[str]
 
-    profile: Mapped["UserProfile"] = relationship(back_populates="user", uselist=False, lazy="joined")
+    profile: Mapped["UserProfile"] = relationship(back_populates="user", uselist=False, lazy="selectin")
 
 
 

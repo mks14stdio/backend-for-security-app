@@ -1,5 +1,6 @@
 import datetime
 from datetime import timedelta
+from typing import Any
 
 import jwt
 from fastapi import HTTPException
@@ -30,7 +31,7 @@ class AuthService:
 
         user_filters = {"email": login.email}
 
-        if not (user := await self.repository.find_one(**user_filters)):
+        if not (user := await self.repository.find_one_by_email(**user_filters)):
             raise unauthed_exception
 
         if not verify_password(
@@ -43,7 +44,7 @@ class AuthService:
             raise unauthed_exception
 
         access_token = create_token({"sub": str(user.id), "role": user.role.value, "email": user.email,
-                                     "fullname": user.full_name}, timedelta(minutes=5), TokenType.ACCESS_TOKEN)
+                                     }, timedelta(minutes=5), TokenType.ACCESS_TOKEN)
         refresh_token = create_token({"sub": str(user.id) }, timedelta(days=30), TokenType.REFRESH_TOKEN)
 
         return TokenInfo(
@@ -70,7 +71,7 @@ class AuthService:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User is not active")
 
         access_token = create_token({"sub": str(user.id), "role": user.role.value, "email": user.email,
-                                     "fullname": user.full_name}, timedelta(minutes=5), TokenType.ACCESS_TOKEN)
+                                    }, timedelta(minutes=5), TokenType.ACCESS_TOKEN)
         #new_refresh_token = create_token({"sub": str(user.id) }, timedelta(days=30), TokenType.REFRESH_TOKEN)
 
         return TokenInfo(
@@ -78,17 +79,10 @@ class AuthService:
             refresh_token=refresh_token.refresh_token,
         )
     
-    def get_currect_user(self, access_token: str):
+    def get_currect_user(self, access_token: str) -> dict[str, Any]:
         try:
             payload = decode_token(access_token)
         except jwt.InvalidTokenError:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token")
         
-        result = UserRead(
-            full_name=payload["fullname"],
-            is_active=True,
-            email=payload["email"],
-            role=payload["role"],
-        )
-
-        return result
+        return payload 

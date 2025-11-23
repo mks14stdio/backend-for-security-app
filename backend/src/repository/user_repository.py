@@ -1,8 +1,9 @@
 
 from typing import Any, List
 from sqlalchemy import insert, select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.models.users import User
+from src.models.users import User, UserProfile
 
 
 class UserRepository:
@@ -11,11 +12,16 @@ class UserRepository:
         self.session = session
 
     async def add_one(self, data: dict[str, Any]) -> User:
-        print(data)
         stmt = insert(User).values(**data).returning(User)
         res = await self.session.execute(stmt)
-        await self.session.commit()
+        await self.session.flush()
         return res.scalar_one()
+    
+    async def add_profile_user(self, profile_data: dict[str, Any]) -> UserProfile:
+        stmt = insert(UserProfile).values(**profile_data).returning(UserProfile)
+        result = await self.session.execute(stmt)
+        await self.session.flush()
+        return result.scalar_one()
 
     async def find_all(self) -> List[User]:
         stmt = select(User)
@@ -23,7 +29,12 @@ class UserRepository:
         objects = [i for i in res.scalars().all()]
         return objects
 
-    async def find_one(self, **filter_by):
-        stmt = select(User).filter_by(**filter_by)
+    async def find_one(self, id: int) -> User | None:
+        stmt = select(User).where(User.id == id)
+        res = await self.session.execute(stmt)
+        return res.scalar_one_or_none()
+    
+    async def find_one_by_email(self, email: str) -> User | None:
+        stmt = select(User).where(User.email == email).options(selectinload(User.profile))
         res = await self.session.execute(stmt)
         return res.scalar_one_or_none()
