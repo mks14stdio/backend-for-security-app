@@ -19,20 +19,22 @@ async def create_admin():
 
     admin_hashed = get_password_hash(admin_password)
 
-    admin_create = UserCreate(full_name="Admin", hashed_password=admin_hashed, role=UserRole.ADMIN, email=admin_email)
+    user_payload = {
+        "email": admin_email,
+        "hashed_password": admin_hashed,
+        "role": UserRole.ADMIN
+    }
 
     async with async_session() as session:
         repository: UserRepository = UserRepository(session)
-        user = await repository.find_one(**{"email": admin_email})
+        user = await repository.find_one_by_email(admin_email)
 
         if user:
             print("EMAIL EXISTS")
             exit(1)
         
-        await repository.add_one(admin_create.model_dump())
+        await repository.add_one(user_payload)
 
-
-    
 
 
 
