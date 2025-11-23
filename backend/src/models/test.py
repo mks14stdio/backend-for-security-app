@@ -9,7 +9,6 @@ class Test(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str]
     questions_count: Mapped[int]
-    oreder_index = Mapped[int]
 
     questions: Mapped[List['Question']] = relationship(back_populates="test")
 
