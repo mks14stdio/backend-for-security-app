@@ -1,4 +1,5 @@
 
+from tkinter import CASCADE
 from typing import List
 
 from sqlalchemy import Enum, ForeignKey
@@ -13,23 +14,22 @@ class Module(Base):
 
     items: Mapped[List["ModuleItem"]] = relationship(
         back_populates="module",
+        cascade="all, delete-orphan",
         order_by="ModuleItem.order_index",
+        lazy="selectin"
     )
-
-
 
 class ModuleItem(Base):
     __tablename__ = "module_items"
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    module_id: Mapped[int] = mapped_column(ForeignKey("modules.id"))
+    title: Mapped[str]
+
+    module_id: Mapped[int] = mapped_column(ForeignKey("modules.id", ondelete="CASCADE"))
     module: Mapped["Module"] = relationship(back_populates="items")
 
-    item_type: Mapped[str] = mapped_column(
-        Enum("article", "test", name="module_item_type")
-    )
-    item_id: Mapped[int]
-
+    article: Mapped["Article"] = relationship(back_populates="module_item", uselist=False, viewonly=True, lazy="joined")
+    article_id: Mapped[int | None] = mapped_column(ForeignKey("articles.id", ondelete="SET NULL"))
     order_index: Mapped[int]
 

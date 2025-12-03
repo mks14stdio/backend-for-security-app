@@ -16,10 +16,11 @@ class Question(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     type: Mapped[QuestionType]
-    answers: Mapped[List["QuestionAnswer"]] = relationship(back_populates="question")
+    text: Mapped[str]
+    answers: Mapped[List["QuestionAnswer"]] = relationship(back_populates="question", lazy="selectin")
 
     test: Mapped["Test"] = relationship(back_populates="questions")
-    test_pk: Mapped[int] = mapped_column(ForeignKey("tests.id"))
+    test_pk: Mapped[int] = mapped_column(ForeignKey("tests.id", ondelete="CASCADE"))
 
 
 class QuestionAnswer(Base):
@@ -30,4 +31,4 @@ class QuestionAnswer(Base):
     is_correct: Mapped[bool]
 
     question: Mapped["Question"] = relationship(back_populates="answers")
-    question_pk: Mapped[int] = mapped_column(ForeignKey("questions.id"))
+    question_pk: Mapped[int] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"))

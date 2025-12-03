@@ -14,8 +14,10 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(default=True)
     hashed_password: Mapped[str]
 
-    profile: Mapped["UserProfile"] = relationship(back_populates="user", uselist=False, lazy="selectin")
-
+    profile: Mapped["UserProfile"] = relationship(back_populates="user", 
+                                                  uselist=False, 
+                                                  lazy="joined",
+                                                  cascade="all, delete-orphan")
 
 
 class UserProfile(Base):
@@ -25,9 +27,9 @@ class UserProfile(Base):
     first_name: Mapped[str] = mapped_column(String(64))
     last_name: Mapped[str] = mapped_column(String(64))
 
-    age: Mapped[int]
+    age: Mapped[int | None]
     gender: Mapped[UserGender | None] = mapped_column(SQLEnum(UserGender))
 
     user: Mapped["User"] = relationship(back_populates="profile", uselist=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
 
