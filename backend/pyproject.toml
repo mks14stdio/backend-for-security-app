@@ -24,6 +24,7 @@ python-multipart = "^0.0.20"
 [tool.poetry.group.dev.dependencies]
 pytest-asyncio = "^1.2.0"
 aiosqlite = "^0.21.0"
+pytest-cov = "^7.0.0"
 
 [build-system]
 requires = ["poetry-core"]
