@@ -23,9 +23,12 @@ config.set_main_option("sqlalchemy.url", settings.DATABASE_URL + "?async_fallbac
 
 from src.scheme.user import UserRole #noqa
 from src.models.users import User #noqa
+from src.models.module import Module, ModuleItem #noqa
 from src.models.article import Article #noqa
 from src.models.question import Question #noqa
 from src.models.test import Test #noqa
+
+from src.models.token import RefreshToken, TestSessionToken #noqa
 
 from src.database.db import Base
 
