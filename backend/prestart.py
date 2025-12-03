@@ -24,7 +24,7 @@ async def create_admin():
         "hashed_password": admin_hashed,
         "role": UserRole.ADMIN
     }
-
+    
     async with async_session() as session:
         repository: UserRepository = UserRepository(session)
         user = await repository.find_one_by_email(admin_email)
@@ -33,7 +33,12 @@ async def create_admin():
             print("EMAIL EXISTS")
             exit(1)
         
-        await repository.add_one(user_payload)
+        try:
+            await repository.add_one(user_payload)
+            await session.commit()
+        except Exception as e:
+            print(e)
+            await session.rollback()
 
 
 
