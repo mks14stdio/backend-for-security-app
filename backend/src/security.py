@@ -6,10 +6,6 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from .settings import settings
 
-from fastapi.security import HTTPBearer
-
-
-
 class TokenType(Enum):
     ACCESS_TOKEN = "access_token"
     REFRESH_TOKEN = "refresh_token"
