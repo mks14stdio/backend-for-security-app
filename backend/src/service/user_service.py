@@ -16,8 +16,8 @@ from ..security import get_password_hash
 
 class UserService:
 
-    def __init__(self, repository: UserRepository, session: AsyncSession):
-        self.repository: UserRepository = repository 
+    def __init__(self, session: AsyncSession):
+        self.repository: UserRepository = UserRepository(session) 
         self.session: AsyncSession = session
 
 
