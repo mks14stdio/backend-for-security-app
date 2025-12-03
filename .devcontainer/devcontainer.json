@@ -10,6 +10,8 @@
 		"docker-compose.yml"
 	],
 
+	
+
 	// The 'service' property is the name of the service for the container that VS Code should
 	// use. Update this value and .devcontainer/docker-compose.yml to the real service name.
 	"service": "backend",
@@ -23,9 +25,20 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"cweijan.vscode-postgresql-client2"
+				"cweijan.vscode-postgresql-client2",
+				"ms-python.python"
 			]
 		}
+	},
+
+	"containerEnv": {
+		"DB_USER": "swaga",
+		"DB_PASSWORD": "gqCj5NQ6lk6rQYYZbQAGFBP4Z8rQem95rdUC0xHW",
+		"DB_NAME": "db_dev",
+		"DB_PORT": "5432",
+		"DB_HOST": "db",
+		"ADMIN_EMAIL": "admin@sfedu.ru",
+		"ADMIN_PASSWORD": "qweasdzxc"
 	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
