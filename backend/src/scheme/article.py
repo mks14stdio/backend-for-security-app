@@ -1,17 +1,24 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
-class ArticleRead(BaseModel):
-    title: str
+class ArticleBase(BaseModel):
     content: str
-    create_at: datetime
-    update_at: datetime | None
+    test_pk: int | None = None
 
-class ArticleCreate(BaseModel):
-    title: str
-    content: str
+class ArticleCreate(ArticleBase):
+    ...
+
+
+
+class ArticleRead(ArticleBase):
+    id: int
+    
+    created_at: datetime | None = None
+    updated_on: datetime | None = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 class ArticleUpdate(BaseModel):
-    title: str | None
-    content: str | None
+    content: str | None = None
+    test_pk: int | None = None
