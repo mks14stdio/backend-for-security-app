@@ -13,12 +13,14 @@ from src.api.dependecy import SecurityDep
 @pytest.mark.asyncio
 async def test_create_without_test_pk(client):
     
-    article = create_article(content="My Hello World Content")
+    article_text = "".join(['a' for i in range(300000)])
+
+    article = create_article(content=article_text)
     result = await client.post("/v1/article/", json=article)
 
     assert result.status_code == 200    
     result_body = ArticleRead.model_validate(result.json())
-    assert result_body.content == "My Hello World Content"
+    assert result_body.content == article_text
 
 @pytest.mark.asyncio
 async def test_create_with_test_pk(client):
