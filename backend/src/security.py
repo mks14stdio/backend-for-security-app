@@ -9,6 +9,7 @@ from .settings import settings
 class TokenType(Enum):
     ACCESS_TOKEN = "access_token"
     REFRESH_TOKEN = "refresh_token"
+    SESSION_TEST_TOKEN = "session_test_token"
 
 def get_password_hash(password: str) -> str:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()

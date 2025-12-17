@@ -28,7 +28,7 @@ from src.models.article import Article #noqa
 from src.models.question import Question #noqa
 from src.models.test import Test #noqa
 
-from src.models.token import RefreshToken, TestSessionToken #noqa
+from src.models.token import RefreshToken, TestSessionToken, TestSessionItem #noqa
 
 from src.database.db import Base
 

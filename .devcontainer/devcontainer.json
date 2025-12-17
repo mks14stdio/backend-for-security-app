@@ -39,7 +39,7 @@
 		"DB_NAME": "db_dev",
 		"DB_PORT": "5432",
 		"DB_HOST": "db",
-		"ADMIN_EMAIL": "admin@sfedu.ru",
+		"ADMIN_EMAIL": "dsova@sfedu.ru",
 		"ADMIN_PASSWORD": "qweasdzxc",
 		
 		"CHOKIDAR_USEPOLLING": "true",

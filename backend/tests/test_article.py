@@ -1,121 +1,163 @@
-from turtle import update
+"""
+Tests for Article API endpoints.
+
+This module tests CRUD operations for articles, including:
+- Creating articles with and without test associations
+- Retrieving articles
+- Updating article content and associations
+- Deleting articles
+"""
+
 import pytest
 
 from .utils import create_answer, create_article, create_question, create_test
+from src.scheme.article import ArticleRead, ArticleUpdate
+from src.scheme.test import QuestionType
 
-from .conftest import get_db
 
-from src.scheme.article import ArticleBase, ArticleCreate, ArticleRead, ArticleUpdate
-from src.scheme.test import TestCreate, TestRead, QuestionCreate, QuestionAnswerCreate, QuestionType
+# ============================================================================
+# FIXTURES & HELPERS
+# ============================================================================
 
-from src.api.dependecy import SecurityDep
+SAMPLE_CONTENT = "My Hello World Content"
+LARGE_CONTENT = "".join(["a" for _ in range(300000)])
 
-@pytest.mark.asyncio
-async def test_create_without_test_pk(client):
-    
-    article_text = "".join(['a' for i in range(300000)])
 
-    article = create_article(content=article_text)
-    result = await client.post("/v1/article/", json=article)
-
-    assert result.status_code == 200    
-    result_body = ArticleRead.model_validate(result.json())
-    assert result_body.content == article_text
-
-@pytest.mark.asyncio
-async def test_create_with_test_pk(client):
-
-    question = create_question(text="Is it true?", type=QuestionType.single, answers=[
-        create_answer(text="Yes", is_correct=True),
-        create_answer(text="No", is_correct=False)
-    ])
-
+async def create_test_with_question(client):
+    """Helper: Create a test with a question and return test_id."""
+    question = create_question(
+        text="Is it true?",
+        type=QuestionType.single,
+        answers=[
+            create_answer(text="Yes", is_correct=True),
+            create_answer(text="No", is_correct=False),
+        ],
+    )
     test = create_test(title="Test 1", questions=[question])
 
-    result = await client.post("/v1/test/", json=test)
-    assert result.status_code == 200
-    result_body = result.json() 
-    test_id = result_body["id"] 
-    
-    article = create_article(content="My Hello World Content", test_pk=test_id)
-    
-    result = await client.post("/v1/article/", json=article)
-    assert result.status_code == 200
-    result_body = result.json()
-    
-    assert result_body["content"] == "My Hello World Content"
-    assert result_body["test_pk"] == test_id 
+    response = await client.post("/v1/test/", json=test)
+    assert response.status_code == 200
+    return response.json()["id"]
+
+
+async def post_article(client, content: str, test_pk: int | None = None) -> ArticleRead:
+    """Helper: Create an article via POST and return ArticleRead object."""
+    article_data = create_article(content=content, test_pk=test_pk)
+    response = await client.post("/v1/article/", json=article_data)
+    assert response.status_code == 200
+    return ArticleRead.model_validate(response.json())
+
+
+# ============================================================================
+# CREATION TESTS
+# ============================================================================
 
 @pytest.mark.asyncio
-async def test_change_article(client):
-    article = create_article(content="My Hello World Content")
+async def test_create_article_without_test_association(client):
+    """Test creating an article without a test association."""
+    article = create_article(content=LARGE_CONTENT)
     result = await client.post("/v1/article/", json=article)
-    assert result.status_code == 200
-    result_body = ArticleRead.model_validate(result.json())
-    assert result_body.content == "My Hello World Content"
-
-    article = create_article(content="My Hello World Content 2")
-    print(result_body.id)
-    result = await client.patch(f"/v1/article/{result_body.id}", json=article)
 
     assert result.status_code == 200
     result_body = ArticleRead.model_validate(result.json())
-    assert result_body.content == "My Hello World Content 2"
+    assert result_body.content == LARGE_CONTENT
+    assert result_body.test_pk is None
+
 
 @pytest.mark.asyncio
-async def test_get_article(client):
-    article = create_article(content="My Hello World Content")
+async def test_create_article_with_test_association(client):
+    """Test creating an article with a test_pk association."""
+    test_id = await create_test_with_question(client)
+
+    article = create_article(content=SAMPLE_CONTENT, test_pk=test_id)
     result = await client.post("/v1/article/", json=article)
-    assert result.status_code == 200
-    result_body = ArticleRead.model_validate(result.json())
-    assert result_body.content == "My Hello World Content"
-
-    result = await client.get(f"/v1/article/{result_body.id}")
 
     assert result.status_code == 200
     result_body = ArticleRead.model_validate(result.json())
-    assert result_body.content == "My Hello World Content"
+    assert result_body.content == SAMPLE_CONTENT
+    assert result_body.test_pk == test_id
+
+
+# ============================================================================
+# RETRIEVAL TESTS
+# ============================================================================
 
 @pytest.mark.asyncio
-async def test_add_article_to_test(client):
-    question = create_question(text="Is it true?", type=QuestionType.single, answers=[
-        create_answer(text="Yes", is_correct=True),
-        create_answer(text="No", is_correct=False)
-    ])
+async def test_get_article_by_id(client):
+    """Test retrieving a single article by ID."""
+    # Create article
+    article_obj = await post_article(client, SAMPLE_CONTENT)
 
-    test = create_test(title="Test 1", questions=[question])
+    # Retrieve it
+    result = await client.get(f"/v1/article/{article_obj.id}")
 
-    result = await client.post("/v1/test/", json=test)
     assert result.status_code == 200
-    result_body = result.json() 
-    test_id = result_body["id"] 
+    result_body = ArticleRead.model_validate(result.json())
+    assert result_body.id == article_obj.id
+    assert result_body.content == SAMPLE_CONTENT
 
-    article = create_article(content="My Hello World Content")
-    
-    result = await client.post("/v1/article/", json=article)
+
+@pytest.mark.asyncio
+async def test_get_nonexistent_article(client):
+    """Test retrieving a non-existent article returns 404."""
+    result = await client.get("/v1/article/99999")
+    assert result.status_code == 404
+
+
+# ============================================================================
+# UPDATE TESTS
+# ============================================================================
+
+@pytest.mark.asyncio
+async def test_update_article_content(client):
+    """Test updating article content via PATCH."""
+    article_obj = await post_article(client, SAMPLE_CONTENT)
+
+    new_content = "My Hello World Content 2"
+    update_data = create_article(content=new_content)
+    result = await client.patch(f"/v1/article/{article_obj.id}", json=update_data)
+
     assert result.status_code == 200
-    result_body = result.json()
-    
-    article_read = ArticleRead.model_validate(result_body)
-    assert article_read.content == "My Hello World Content"
-    assert article_read.test_pk == None
+    result_body = ArticleRead.model_validate(result.json())
+    assert result_body.content == new_content
+    assert result_body.id == article_obj.id
 
-    article = create_article(content="My Hello World Content", test_pk=test_id)
-    result = await client.patch(f"/v1/article/{article_read.id}", json=article)
 
-    update_article = ArticleRead.model_validate(result.json())
-    assert update_article.test_pk == test_id
+@pytest.mark.asyncio
+async def test_add_test_association_to_article(client):
+    """Test adding a test association to an existing article."""
+    # Create article without test
+    article_obj = await post_article(client, SAMPLE_CONTENT)
+    assert article_obj.test_pk is None
+
+    # Create a test
+    test_id = await create_test_with_question(client)
+
+    # Add test association via update
+    update_data = create_article(content=SAMPLE_CONTENT, test_pk=test_id)
+    result = await client.patch(f"/v1/article/{article_obj.id}", json=update_data)
+
+    assert result.status_code == 200
+    updated_article = ArticleRead.model_validate(result.json())
+    assert updated_article.test_pk == test_id
+
+
 
 @pytest.mark.asyncio
 async def test_delete_article(client):
-    article = create_article(content="My Hello World Content")
-    result = await client.post("/v1/article/", json=article)
-    assert result.status_code == 200
-    result_body = ArticleRead.model_validate(result.json())
-    assert result_body.content == "My Hello World Content"
+    """Test deleting an article via DELETE endpoint."""
+    article_obj = await post_article(client, SAMPLE_CONTENT)
 
-    result = await client.delete(f"/v1/article/{result_body.id}")
+    # Delete it
+    result = await client.delete(f"/v1/article/{article_obj.id}")
     assert result.status_code == 200
 
-    result = await client.get(f"/v1/article/{result_body.id}")
+    # Verify it's gone
+    result = await client.get(f"/v1/article/{article_obj.id}")
     assert result.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_delete_nonexistent_article(client):
+    result = await client.delete("/v1/article/99999")
+    assert result.status_code in [400, 404]

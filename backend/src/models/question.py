@@ -22,7 +22,6 @@ class Question(Base):
     test: Mapped["Test"] = relationship(back_populates="questions")
     test_pk: Mapped[int] = mapped_column(ForeignKey("tests.id", ondelete="CASCADE"))
 
-
 class QuestionAnswer(Base):
     __tablename__ = "questionsanswers"
 

@@ -23,7 +23,7 @@ class ModuleItemUpdate(BaseModel):
 class ModuleItemRead(BaseModel):
     order_index: int
     title: str
-    article_id: int
+
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -41,6 +41,7 @@ class ModuleUpdate(BaseModel):
 
 class ModuleRead(ModuleBase):
     id: int
+    title: str
     items: List[ModuleItemRead] = []
 
     model_config = ConfigDict(from_attributes=True)
