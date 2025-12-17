@@ -54,7 +54,6 @@ class ModuleService:
 
     async def delete_module_item(self, id: int, item_id: int):
         try:
-            #TODO: проверить что элемент не используется в других модулях
             delete_module_item = await self.item_repository.get_by_id(item_id)
 
             if (delete_module_item.module_id != id):
