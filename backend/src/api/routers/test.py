@@ -35,9 +35,6 @@ async def get_test(id: int, service: TestServiceDep) -> TestRead:
 async def add_test_question(id:int, question: QuestionCreate, service: TestServiceDep):
     return await service.add_question(id, question)
 
-@router.patch("/{id}/question/{id_question}", dependencies=[require_role([UserRole.ADMIN, UserRole.EDITOR])])
-async def change_question(id: int, id_question: int, question: QuestionUpdate, service: TestServiceDep):
-    ...
 
 @router.delete("/{id}", dependencies=[require_role([UserRole.ADMIN, UserRole.EDITOR])])
 async def delete_test(id: int, service: TestServiceDep):

@@ -4,14 +4,13 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+from src.models import question
 from src.repository.question_answer_repository import QuestionAnswerRepository
 from src.repository.question_repository import QuestionRepositroy
 from src.scheme.test import QuestionAnswerBase, QuestionAnswerCreate, QuestionAnswerRead, QuestionBase, QuestionRead, QuestionCreate, QuestionUpdate
 from src.models.question import QuestionType, Question
 
 from .question_validator.answer_validator import FactoryAnswerValidator
-
-    
 
 class QuestionService:
 

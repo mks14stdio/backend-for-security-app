@@ -22,8 +22,6 @@ class ModuleItemUpdate(BaseModel):
 
 class ModuleItemRead(BaseModel):
     order_index: int
-    title: str
-
 
     model_config = ConfigDict(from_attributes=True)
 

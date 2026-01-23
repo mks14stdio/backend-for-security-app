@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict
 
 class ArticleBase(BaseModel):
     content: str
+    title: str
     test_pk: int | None = None
 
 class ArticleCreate(ArticleBase):

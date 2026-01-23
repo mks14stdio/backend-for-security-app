@@ -10,5 +10,5 @@ class Test(Base):
     title: Mapped[str]
     questions_count: Mapped[int]
 
-    questions: Mapped[List['Question']] = relationship(back_populates="test", cascade="all, delete-orphan")
+    questions: Mapped[List['Question']] = relationship(back_populates="test", cascade="all, delete-orphan") # type: ignore
 

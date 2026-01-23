@@ -19,7 +19,7 @@ class Question(Base):
     text: Mapped[str]
     answers: Mapped[List["QuestionAnswer"]] = relationship(back_populates="question", lazy="selectin")
 
-    test: Mapped["Test"] = relationship(back_populates="questions")
+    test: Mapped["Test"] = relationship(back_populates="questions") # type: ignore
     test_pk: Mapped[int] = mapped_column(ForeignKey("tests.id", ondelete="CASCADE"))
 
 class QuestionAnswer(Base):

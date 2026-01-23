@@ -1,6 +1,3 @@
-
-from mmap import MAP_POPULATE
-
 from sqlalchemy import ForeignKey
 from src.database.db import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -13,14 +10,12 @@ class RefreshToken(Base):
 class TestSessionToken(Base):
     __tablename__ = "test_session_tokens"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    token: Mapped[str]
+    token: Mapped[str] =  mapped_column(primary_key=True)
 
 class TestSessionItem(Base):
     __tablename__ = "test_session_items"
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    test_session_id: Mapped[int] = mapped_column(ForeignKey("test_session_tokens.id", ondelete="CASCADE"))
+    test_session_token: Mapped[str] = mapped_column(ForeignKey("test_session_tokens.token", ondelete="CASCADE"))
     question_id: Mapped[int] = mapped_column(ForeignKey("questions.id", ondelete="SET NULL"))
-    

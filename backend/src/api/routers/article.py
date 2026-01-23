@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends, Form, Query
 
 from src.scheme.user import UserRole
 from src.scheme.article import ArticleCreate, ArticleRead, ArticleUpdate
@@ -14,6 +14,7 @@ router = APIRouter(prefix="/article",
                    tags=["Статьи"], 
                    dependencies=[Depends(get_user)])
 
+
 @router.post("/", 
              dependencies=[require_role([UserRole.ADMIN, UserRole.EDITOR])],
              summary="Добавления статьи")
@@ -26,10 +27,12 @@ async def add_article(article: ArticleCreate, service: ArticleServiceDep) -> Art
 async def update_article(id: int, article: ArticleUpdate, service: ArticleServiceDep) -> ArticleRead:
     return await service.update_one(id, article)
 
+
 @router.get("/", dependencies=[require_role([UserRole.ADMIN, UserRole.EDITOR])],
             summary="Получение списка статей")
-async def get_all_article(service: ArticleServiceDep, limit: int = Form(), offset: int = Form()) -> List[ArticleRead]:
-    return await service.get_all(limit, offset);
+async def get_all_article(service: ArticleServiceDep, limit: int = Query(10, ge=1, le=100), offset: int = Query(0, ge=0)) -> List[ArticleRead]:
+    return await service.get_all(limit, offset)
+
 
 @router.get("/{id}", summary="Получение статьи по id")
 async def get_article(id: int, service: ArticleServiceDep) -> ArticleRead:

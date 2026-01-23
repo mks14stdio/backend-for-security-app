@@ -8,18 +8,18 @@ from src.scheme.user import UserRead
 
 router = APIRouter(tags=['Auth'])
 
-@router.post("/login/")
+@router.post("/login/", summary="Логин")
 async def login(auth_service: AuthServiceDep, login: LoginSchema) -> TokenInfo:
     return await auth_service.login(login)
 
-@router.post("/refresh/")
+@router.post("/refresh/", summary="Обновление токена")
 async def refresh(refresh_token: RefreshSchema, auth_service: AuthServiceDep):
     return await auth_service.refresh(refresh_token)
 
-@router.post("/register/")
+@router.post("/register/", summary="Регистрация")
 async def register(new_user: RegisterSchema, user_service: UserServiceDep) -> UserRead:
     return await user_service.create_user(new_user)
 
-@router.get("/me/")
+@router.get("/me/", summary="Получение профиля")
 async def get_me(user: GetUserDep, service: UserServiceDep) -> UserRead:
     return UserRead.model_validate(await service.get_user_by_email(user["email"]))

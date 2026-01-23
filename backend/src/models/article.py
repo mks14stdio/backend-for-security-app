@@ -11,9 +11,9 @@ class Article(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
+    title: Mapped[str]
     content: Mapped[str]
-    
-    module_item: Mapped["ModuleItem"] = relationship(back_populates="article", uselist=False)
+    module_item: Mapped["ModuleItem"] = relationship(back_populates="article", uselist=False) # type: ignore
 
     test_pk: Mapped[int | None] = mapped_column(ForeignKey("tests.id", ondelete="SET NULL"), nullable=True)
 

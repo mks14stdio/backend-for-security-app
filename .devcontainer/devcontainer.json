@@ -20,9 +20,9 @@
 	// connected. This is typically a file mount in .devcontainer/docker-compose.yml
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	"features": {
-		"ghcr.io/devcontainers/features/python:1": {},
 		"ghcr.io/devcontainers/features/git:1": {},
-		"ghcr.io/devcontainers/features/node:1": {}
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/duduribeiro/devcontainer-features/neovim:1": { "version": "nightly" },
 	},
 	"customizations": {
 		"vscode": {
@@ -39,7 +39,7 @@
 		"DB_NAME": "db_dev",
 		"DB_PORT": "5432",
 		"DB_HOST": "db",
-		"ADMIN_EMAIL": "dsova@sfedu.ru",
+		"ADMIN_EMAIL": "dsova@test.com",
 		"ADMIN_PASSWORD": "qweasdzxc",
 		
 		"CHOKIDAR_USEPOLLING": "true",
