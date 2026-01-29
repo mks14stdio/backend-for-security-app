@@ -1,8 +1,13 @@
-from typing import List
+from typing import TYPE_CHECKING, List
 
-from sqlalchemy import Enum, ForeignKey
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from src.database.db import Base
-from sqlalchemy.orm import mapped_column, Mapped, relationship
+
+if TYPE_CHECKING:
+    from .article import Article
+
 
 class Module(Base):
     __tablename__ = "modules"
@@ -14,8 +19,9 @@ class Module(Base):
         back_populates="module",
         cascade="all, delete-orphan",
         order_by="ModuleItem.order_index",
-        lazy="selectin"
+        lazy="selectin",
     )
+
 
 class ModuleItem(Base):
     __tablename__ = "module_items"
@@ -25,7 +31,10 @@ class ModuleItem(Base):
     module_id: Mapped[int] = mapped_column(ForeignKey("modules.id", ondelete="CASCADE"))
     module: Mapped["Module"] = relationship(back_populates="items")
 
-    article: Mapped["Article"] = relationship(back_populates="module_item", uselist=False, viewonly=True, lazy="joined") # type: ignore
-    article_id: Mapped[int] = mapped_column(ForeignKey("articles.id", ondelete="CASCADE"))
+    article: Mapped["Article"] = relationship(
+        back_populates="module_item", uselist=False, viewonly=True, lazy="joined"
+    )  # type: ignore
+    article_id: Mapped[int] = mapped_column(
+        ForeignKey("articles.id", ondelete="CASCADE")
+    )
     order_index: Mapped[int]
-
