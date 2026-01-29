@@ -1,9 +1,6 @@
 services:
-
   db:
     image: postgres:16
-    env_file:
-      - ".env"
     environment:
       POSTGRES_USER: "$DB_USER"
       POSTGRES_PASSWORD: "$DB_PASSWORD"
@@ -19,31 +16,34 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: ["poetry", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-    env_file:
-      - ".env"
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/src
+          target: /app/src
+        - action: rebuild
+          path: ./backend/poetry.lock
+          target: /app/poetry.lock
+    command:
+      [
+        "poetry",
+        "run",
+        "uvicorn",
+        "src.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+      ]
     depends_on:
       - db
     ports:
       - "8000:8000"
     environment:
-      APPSTATE: "dev"
-    volumes:
-      - ./backend:/app
+      DB_USER: "dev"
     networks:
       - app-network
-
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - backend
-  #   environment:
-  #     APPSTATE: "dev"
-  #   networks:
-  #     - app-network
 
 volumes:
   pg_data:
