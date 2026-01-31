@@ -1,4 +1,4 @@
-FROM python:3.14.0-slim-trixie
+FROM python:3.14.0-slim as buider
 
 #RUN apt-get update && apt-get install -y \
 #    gcc \
@@ -8,8 +8,6 @@ FROM python:3.14.0-slim-trixie
 
 WORKDIR /app
 
-COPY ./poetry.lock ./pyproject.toml /app/
-
 ENV PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONHASHSEED=random \
@@ -17,13 +15,12 @@ ENV PYTHONFAULTHANDLER=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100
 
-ENV POETRY_NO_INTERACTION=1
-ENV POETRY_VIRTUALENVS_CREATE=false
-ENV POETRY_CACHE_DIR='/var/cache/pypoetry'
-ENV POETRY_HOME='/usr/local'
-ENV POETRY_VERSION=2.1.4
+COPY ./poetry.lock ./pyproject.toml /app/
+RUN pip install "poetry==2.1.4" \
+    && poetry install --no-root --only main
 
-RUN pip install --upgrade pip wheel "poetry==2.1.4"
-RUN poetry install
+FROM python:3.14.0-slim as production
 
-COPY . /app/
+WORKDIR /app
+COPY --from=buider /app/.venv /app/.venv
+COPY . .
