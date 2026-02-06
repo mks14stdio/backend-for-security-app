@@ -1,13 +1,8 @@
-from math import exp
-from typing import Any, List
-
-from pydantic_core import to_json
-from sqlalchemy import insert, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.models.token import RefreshToken
-from src.models.users import User, UserProfile
+from src.models.users import User
 
 
 class UserRepository:
@@ -19,8 +14,8 @@ class UserRepository:
         await self.session.flush()
         return user
 
-    async def find_all(self) -> List[User]:
-        stmt = select(User)
+    async def find_all(self, limit: int = 10, offset: int = 0) -> list[User]:
+        stmt = select(User).limit(limit).offset(offset)
         res = await self.session.execute(stmt)
         objects = [i for i in res.scalars().all()]
         return objects
