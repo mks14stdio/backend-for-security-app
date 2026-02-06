@@ -1,93 +1,124 @@
-import datetime
 from datetime import timedelta
 from typing import Any
 
 import jwt
 from fastapi import HTTPException
-
-
 from starlette import status
 
-from src.scheme.user import UserRead
+from src.models.token import RefreshToken
 from src.models.users import User
+from src.repository.refresh_token_repository import RefreshTokenRepository
 from src.repository.user_repository import UserRepository
 from src.scheme.auth import RefreshSchema
-from ..scheme.auth import LoginSchema, TokenInfo
-from ..security import verify_password, create_token, TokenType, decode_token
+
+from ..scheme.auth import LoginSchema, TokenAuthPayLoad, TokenInfo
+from ..security import TokenType, create_token, decode_token, verify_password
+
 
 class AuthService:
-
-    def __init__(self, repository: UserRepository):
-        self.repository: UserRepository = repository
+    def __init__(
+        self,
+        user_repository: UserRepository,
+        refresh_token_repository: RefreshTokenRepository,
+    ):
+        self.user_repository: UserRepository = user_repository
+        self.token_refresh_repository: RefreshTokenRepository = refresh_token_repository
 
     async def login(self, login: LoginSchema):
-
         unauthed_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",     
+            detail="Invalid email or password",
         )
 
-        user_filters = {"email": login.email}
-
-        if not (user := await self.repository.find_one_by_email(login.email)):
+        if not (user := await self.user_repository.find_by_email(login.email)):
             raise unauthed_exception
 
-        if not verify_password(
-            password=login.password,
-            hashed=user.hashed_password
-        ):
+        if not verify_password(password=login.password, hashed=user.hashed_password):
             raise unauthed_exception
 
         if not user.is_active:
             raise unauthed_exception
 
-        access_token = create_token({"sub": str(user.id), "role": user.role.value, "email": user.email,
-                                     }, timedelta(minutes=5), TokenType.ACCESS_TOKEN)
-        refresh_token = create_token({"sub": str(user.id) }, timedelta(days=30), TokenType.REFRESH_TOKEN)
+        access_token = create_token(
+            {
+                "sub": str(user.id),
+                "role": user.role.value,
+                "email": user.email,
+            },
+            timedelta(minutes=5),
+            TokenType.ACCESS_TOKEN,
+        )
+        refresh_token = create_token(
+            {"sub": str(user.id)}, timedelta(days=30), TokenType.REFRESH_TOKEN
+        )
 
-        await self.repository.add_refresh_token(refresh_token)
+        await self.token_refresh_repository.add(RefreshToken(token=refresh_token))
 
         return TokenInfo(
             access_token=access_token,
             refresh_token=refresh_token,
         )
 
-
     async def refresh(self, refresh_token: RefreshSchema) -> TokenInfo:
-
         try:
             decoded_refresh_token = decode_token(refresh_token.refresh_token)
-        except jwt.InvalidTokenError as e:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token")
+        except jwt.InvalidTokenError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+            )
 
-        user_filters = {"id": int(decoded_refresh_token["sub"])}
+        founded_refresh_token: (
+            RefreshToken | None
+        ) = await self.token_refresh_repository.get(refresh_token.refresh_token)
 
-        user: User | None = await self.repository.find_one(**user_filters)
+        founded_user: User | None = await self.user_repository.find_by_email(
+            decoded_refresh_token["email"]
+        )
 
-        if not user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User doesnt exist")
+        if not founded_refresh_token or not founded_user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Refresh token is not active or user doesnt exist",
+            )
 
-        if not user.is_active:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User is not active")
+        if not founded_user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="User is not active"
+            )
 
-        if not await self.repository.delete_refresh_token(refresh_token.refresh_token):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Refresh token is not active")
-        
-        access_token = create_token({"sub": str(user.id), "role": user.role.value, "email": user.email,
-                                    }, timedelta(minutes=5), TokenType.ACCESS_TOKEN)
-        new_refresh_token = create_token({"sub": str(user.id) }, timedelta(days=30), TokenType.REFRESH_TOKEN)
+        await self.token_refresh_repository.delete(founded_refresh_token)
 
-        await self.repository.add_refresh_token(new_refresh_token)
-
+        access_token = create_token(
+            {
+                "sub": str(founded_user.id),
+                "role": founded_user.role.value,
+                "email": founded_user.email,
+            },
+            timedelta(minutes=5),
+            TokenType.ACCESS_TOKEN,
+        )
+        new_refresh_token = create_token(
+            {"sub": str(founded_user.id)}, timedelta(days=30), TokenType.REFRESH_TOKEN
+        )
+        await self.token_refresh_repository.add(RefreshToken(token=new_refresh_token))
         return TokenInfo(
             access_token=access_token,
             refresh_token=new_refresh_token,
         )
-    
-    def get_currect_user(self, access_token: str) -> dict[str, Any]:
+
+    async def get_currect_user(self, access_token: str) -> User:
         try:
-            payload = decode_token(access_token)
+            payload: dict[str, str] = decode_token(access_token)
         except jwt.InvalidTokenError:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token")
-        
-        return payload 
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+            )
+
+        user: User | None = await self.user_repository.find_by_email(payload["email"])
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+            )
+
+        return user
