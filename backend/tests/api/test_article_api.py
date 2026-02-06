@@ -76,7 +76,7 @@ async def test_add_article_quiz(auth_client: AsyncClient, db_session: AsyncSessi
         "questions": questions_template,
     }
 
-    response = await auth_client.put("v1/articles/test", json=payload)
+    response = await auth_client.put(f"v1/articles/{article.id}/test", json=payload)
 
     assert response.status_code == 200, response.text
     data = response.json()
