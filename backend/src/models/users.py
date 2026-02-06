@@ -25,6 +25,7 @@ class User(Base):
         uselist=False,
         lazy="joined",
         cascade="all, delete-orphan",
+        primaryjoin="User.id==UserProfile.id",
     )
 
 
@@ -42,7 +43,6 @@ class UserProfile(Base):
         back_populates="user", uselist=True
     )
 
-    user: Mapped["User"] = relationship(back_populates="profile", uselist=False)
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False
+    user: Mapped["User"] = relationship(
+        back_populates="profile", uselist=False, lazy="noload"
     )
