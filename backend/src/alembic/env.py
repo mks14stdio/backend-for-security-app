@@ -18,12 +18,10 @@ if config.config_file_name is not None:
 
 from src.settings import settings
 
-
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL + "?async_fallback=true")
 
-from src.models import *  # This should import all your models
-
 from src.database.db import Base
+from src.models import *  # This should import all your models
 
 # add your model's MetaData object here
 # for 'autogenerate' support
