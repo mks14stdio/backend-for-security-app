@@ -8,6 +8,7 @@ from src.database.db import Base
 
 if TYPE_CHECKING:
     from .module import ModuleItem
+    from .quiz import QuizArticle
 
 
 class Article(Base):
@@ -20,6 +21,10 @@ class Article(Base):
 
     module_item: Mapped["ModuleItem"] = relationship(
         back_populates="article", uselist=False, lazy="noload"
+    )
+
+    quiz: Mapped["QuizArticle"] = relationship(
+        back_populates="article", uselist=False, lazy="select"
     )
 
     created_on: Mapped[datetime] = mapped_column(default=func.now())
