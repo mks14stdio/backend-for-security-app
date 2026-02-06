@@ -1,7 +1,7 @@
 import select
 from typing import List
 
-from sqlalchemy import select
+from sqlalchemy import select  # noqa: F811
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.article import Article
