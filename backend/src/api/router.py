@@ -5,11 +5,11 @@ from .routers import (
     module,
     user,
 )
-from .routers.article import article, quiz
+from .routers.article import article
 
 main_router = APIRouter()
 main_router.include_router(auth.router)
-main_router.include_router(user.router)
+# main_router.include_router(user.router)
 main_router.include_router(article.router)
 
-main_router.include_router(module.router)
+# main_router.include_router(module.router)
