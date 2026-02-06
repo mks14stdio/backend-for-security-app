@@ -15,14 +15,11 @@ class Article(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    title: Mapped[str]
-    content: Mapped[str]
-    module_item: Mapped["ModuleItem"] = relationship(
-        back_populates="article", uselist=False
-    )  # type: ignore
+    title: Mapped[str] = mapped_column()
+    content: Mapped[str] = mapped_column()
 
-    test_pk: Mapped[int | None] = mapped_column(
-        ForeignKey("tests.id", ondelete="SET NULL"), nullable=True
+    module_item: Mapped["ModuleItem"] = relationship(
+        back_populates="article", uselist=False, lazy="noload"
     )
 
     created_on: Mapped[datetime] = mapped_column(default=func.now())
