@@ -15,7 +15,7 @@ class ModuleService:
         self.repository = ModuleRepository(session=session)
         self.session = session
 
-    async def add_module(self, data: ModuleCreate):
+    async def add_module(self, data: ModuleCreate) -> Module:
         try:
             module: Module = Module(title=data.title, need_to_unlook=data.need_to_xp)
 
@@ -34,20 +34,17 @@ class ModuleService:
 
             await self.session.commit()
             await self.session.refresh(module)
-            return ModuleRead.model_validate(module)
+            return module
         except Exception as e:
             await self.session.rollback()
             print(e)
             raise HTTPException(400, "Не удалось создать модуль")
 
-    async def get_one(self, id: int) -> ModuleRead:
-        try:
-            result = await self.repository.get(id)
-            return ModuleRead.model_validate(result)
-        except Exception:
-            raise HTTPException(404, "Модуль не найден")
+    async def get_one(self, id: int) -> Module | None:
+        result = await self.repository.get(id)
+        return result
 
-    async def update_module(self, data: ModuleUpdate, module_id: int):
+    async def update_module(self, data: ModuleUpdate, module_id: int) -> Module:
         try:
             module: Module | None = await self.repository.get(module_id)
             if not module:
@@ -58,7 +55,7 @@ class ModuleService:
 
             await self.session.commit()
             await self.session.refresh(module)
-            return ModuleRead.model_validate(module)
+            return module
         except Exception:
             await self.session.rollback()
             raise HTTPException(400, "Не удалось обновить модуль")

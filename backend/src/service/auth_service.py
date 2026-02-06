@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import Any
 
 import jwt
 from fastapi import HTTPException
@@ -11,7 +10,7 @@ from src.repository.refresh_token_repository import RefreshTokenRepository
 from src.repository.user_repository import UserRepository
 from src.scheme.auth import RefreshSchema
 
-from ..scheme.auth import LoginSchema, TokenAuthPayLoad, TokenInfo
+from ..scheme.auth import LoginSchema, TokenInfo
 from ..security import TokenType, create_token, decode_token, verify_password
 
 

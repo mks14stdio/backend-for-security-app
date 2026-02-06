@@ -1,8 +1,8 @@
-
-
 from pydantic_core.core_schema import ExpectedSerializationTypes
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.scheme.quiz import QuizCreate, QuizRead
+
+from src.models.quiz import QuizArticle
+from src.scheme.quiz import QuizCreate
 from src.service.article_service import ArticleService
 
 
@@ -10,8 +10,6 @@ class QuizService:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    def add_quiz_article(article_id: int, quiz: QuizCreate, article_service: ArticleService):
+    def add(self, quiz: QuizCreate) -> QuizArticle: ...
 
-        try:
-
-        except Exception:
+    def get(self, article_id: int) -> QuizArticle | None: ...

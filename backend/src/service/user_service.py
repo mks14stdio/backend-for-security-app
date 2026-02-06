@@ -18,7 +18,7 @@ class UserService:
 
     async def create_user(
         self, new_user: RegisterSchema, role: UserRole = UserRole.USER
-    ) -> UserRead:
+    ) -> User:
         if await self.repository.find_by_email(new_user.email):
             raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -40,11 +40,11 @@ class UserService:
             await self.session.commit()
             await self.session.refresh(user)
 
-            return UserRead.model_validate(user)
+            return user
         except Exception as e:
             await self.session.rollback()
             raise e
 
-    async def get_user_by_email(self, email: EmailStr) -> UserRead:
+    async def get_user_by_email(self, email: EmailStr) -> User | None:
         user = await self.repository.find_by_email(email)
-        return UserRead.model_validate(user)
+        return user

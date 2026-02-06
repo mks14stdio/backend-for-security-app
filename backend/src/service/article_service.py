@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.article import Article
 from src.repository.article_repository import ArticleRepository
-from src.scheme.article import ArticleCreate, ArticleRead, ArticleUpdate
+from src.scheme.article import ArticleCreate, ArticleUpdate
 
 
 class ArticleService:
