@@ -1,8 +1,2 @@
 #!/usr/bin/env bash
-
-export DB_USER=dev
-export DB_PASSWORD=testtest
-export DB_NAME=db_name
-
-
-docker compose -f docker-compose.yml watch
+docker compose --file docker-compose.yml --file docker-compose.dev.yml up --build -d

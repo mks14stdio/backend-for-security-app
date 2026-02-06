@@ -1,0 +1,24 @@
+services:
+  prestart:
+    image: backend-swag:latest
+    build:
+      context: ./backend
+      target: production
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+    command: bash startup.sh
+    environment:
+      - ADMIN_EMAIL="${SECRET_EMAIL}"
+      - ADMIN_PASSWORD="${SECRET_PASSWORD}"
+    networks:
+      - app-network
+
+  backend:
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+      prestart:
+        condition: service_completed_successfully
