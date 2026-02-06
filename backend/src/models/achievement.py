@@ -16,7 +16,9 @@ class Achievement(Base):
     name: Mapped[str]
     description: Mapped[str]
     icon: Mapped[StaticResource | None] = relationship(uselist=False)
-    icon_pk: Mapped[int | None] = mapped_column(ForeignKey("static_resources.id"))
+    icon_pk: Mapped[int | None] = mapped_column(
+        ForeignKey("static_resources.id"), nullable=True
+    )
 
 
 if TYPE_CHECKING:
@@ -25,9 +27,13 @@ if TYPE_CHECKING:
 
 class AchievementUser(Base):
     __tablename__ = "achievement_users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
     achievement_pk: Mapped[int] = mapped_column(ForeignKey("achievements.id"))
 
     user_pk: Mapped[int] = mapped_column(ForeignKey("userprofiles.id"))
 
-    user: Mapped["UserProfile"] = relationship()
+    user: Mapped["UserProfile"] = relationship(
+        back_populates="achievements", uselist=False, lazy="noload"
+    )
     date_received: Mapped[datetime] = mapped_column(default=func.now())
