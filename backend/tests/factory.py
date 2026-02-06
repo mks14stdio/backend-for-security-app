@@ -1,5 +1,4 @@
 from sqlalchemy.ext.asyncio.session import AsyncSession
-from sqlalchemy.orm import Session
 
 from src.database.db import Base
 from src.models.achievement import Achievement
@@ -41,3 +40,6 @@ async def create_achievement(db: AsyncSession, **kwargs) -> Achievement:
     )
 
     return await push_to_database(db, achievement)  # pyright: ignore[reportReturnType]
+
+
+async def create_quiz(db: AsyncSession, article: Article, **kwargs): ...
