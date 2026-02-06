@@ -38,9 +38,8 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    email: EmailStr
     password: str = Field(..., min_length=8, max_length=32)
-    role: UserRole = UserRole.USER
+    profile: UserProfileCreate | None = None
 
 
 class UserRead(UserBase):
