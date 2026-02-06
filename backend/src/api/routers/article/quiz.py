@@ -1,7 +1,11 @@
+from fastapi.routing import APIRouter
+
 from src.api.dependecy import ArticleServiceDep, require_role
 from src.scheme.user import UserRole
 
-from .article import router
+# from .article import router
+
+router = APIRouter(prefix="/fixme", tags=["FIX"])
 
 
 @router.put("/{id}/test", dependencies=[require_role(UserRole.ADMIN, UserRole.EDITOR)])

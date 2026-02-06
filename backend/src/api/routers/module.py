@@ -22,12 +22,12 @@ router = APIRouter(prefix="/modules", tags=["Модули"])
 async def create_module(
     new_module: ModuleCreate, service: ModuleServiceDep
 ) -> ModuleRead:
-    return await service.add_module(new_module)
+    return ModuleRead.model_validate(await service.add_module(new_module))
 
 
 @router.get("/{id}", description="Получение модуля по id")
 async def get_module(id: int, service: ModuleServiceDep) -> ModuleRead:
-    return await service.get_one(id)
+    return ModuleRead.model_validate(await service.get_one(id))
 
 
 @router.patch(
@@ -38,7 +38,7 @@ async def get_module(id: int, service: ModuleServiceDep) -> ModuleRead:
 async def update_module(
     id: int, module: ModuleUpdate, service: ModuleServiceDep
 ) -> ModuleRead:
-    return await service.update_module(module, id)
+    return ModuleRead.model_validate(await service.update_module(module, id))
 
 
 @router.delete(

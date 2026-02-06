@@ -1,8 +1,11 @@
 from fastapi import APIRouter
-from pydantic import EmailStr
+
+from src.api.dependecy import GetUser
+from src.scheme.user import UserRead
 
 router = APIRouter(prefix="/users", tags=["Пользователи"])
 
-from src.api.dependecy import UserServiceDep, require_role
-from src.scheme.auth import RegisterSchema
-from src.scheme.user import UserCreate, UserRead, UserRole
+
+@router.get("/me")
+async def get_me(user: GetUser) -> UserRead:
+    return UserRead.model_validate(user)

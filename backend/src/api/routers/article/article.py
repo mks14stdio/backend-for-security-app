@@ -20,11 +20,12 @@ router = APIRouter(
     "/",
     dependencies=[require_role(UserRole.ADMIN, UserRole.EDITOR)],
     summary="Добавления статьи",
+    status_code=201,
 )
 async def add_article(
     article: ArticleCreate, service: ArticleServiceDep
 ) -> ArticleRead:
-    return await service.add(article)
+    return ArticleRead.model_validate(await service.add(article))
 
 
 @router.patch(
@@ -35,7 +36,7 @@ async def add_article(
 async def update_article(
     id: int, article: ArticleUpdate, service: ArticleServiceDep
 ) -> ArticleRead:
-    return await service.update(id, article)
+    return ArticleRead.model_validate(await service.update(id, article))
 
 
 @router.post("/{id}/read", summary="Чтение статьи")
@@ -54,14 +55,14 @@ async def get_all_article(
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
 ) -> List[ArticleRead]:
-    return await service.get_all(limit, offset)
+    return [ArticleRead.model_validate(i) for i in await service.get_all(limit, offset)]
 
 
 @router.get("/{id}", summary="Получение статьи по id")
 async def get_article(id: int, service: ArticleServiceDep) -> ArticleRead:
-    return await service.get_one_by_id(id)
+    return ArticleRead.model_validate(await service.get_one_by_id(id))
 
 
-@router.delete("/{id}", summary="Удаление статьи по id")
+@router.delete("/{id}", summary="Удаление статьи по id", status_code=204)
 async def delete_article(id: int, service: ArticleServiceDep):
     return await service.delete(id)

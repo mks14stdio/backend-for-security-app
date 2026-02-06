@@ -19,4 +19,4 @@ async def refresh(refresh_token: RefreshSchema, auth_service: AuthServiceDep):
 
 @router.post("/register/", summary="Регистрация")
 async def register(new_user: RegisterSchema, user_service: UserServiceDep) -> UserRead:
-    return await user_service.create_user(new_user)
+    return UserRead.model_validate(await user_service.create_user(new_user))
