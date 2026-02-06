@@ -13,6 +13,7 @@ class Module(Base):
     __tablename__ = "modules"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    need_to_unlook: Mapped[int]
     title: Mapped[str]
 
     items: Mapped[List["ModuleItem"]] = relationship(
@@ -33,7 +34,7 @@ class ModuleItem(Base):
 
     article: Mapped["Article"] = relationship(
         back_populates="module_item", uselist=False, viewonly=True, lazy="joined"
-    )  # type: ignore
+    )
     article_id: Mapped[int] = mapped_column(
         ForeignKey("articles.id", ondelete="CASCADE")
     )
