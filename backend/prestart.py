@@ -1,13 +1,12 @@
 import asyncio
 import os
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
-
-from src.repository.user_repository import UserRepository
-from src.scheme.user import UserCreate, UserRole
-from src.security import get_password_hash
 
 from src.database.db import async_session
+from src.models.users import User, UserProfile
+from src.repository.user_repository import UserRepository
+from src.scheme.user import UserRole
+from src.security import get_password_hash
+
 
 async def create_admin():
     admin_email: str | None = os.getenv("ADMIN_EMAIL")
@@ -19,32 +18,33 @@ async def create_admin():
 
     admin_hashed = get_password_hash(admin_password)
 
-    user_payload = {
-        "email": admin_email,
-        "hashed_password": admin_hashed,
-        "role": UserRole.ADMIN
-    }
-    
     async with async_session() as session:
         repository: UserRepository = UserRepository(session)
-        user = await repository.find_one_by_email(admin_email)
+        user = await repository.find_by_email(admin_email)
 
         if user:
-            print("EMAIL EXISTS")
-            exit(1)
-        
+            print("Admin alredy exsist")
+            exit(0)
+
+        user = User()
+        user.email = admin_email
+        user.hashed_password = admin_hashed
+        user.profile = UserProfile()
+        user.profile.first_name = "Denis"
+        user.profile.last_name = "Sova"
+
         try:
-            await repository.add_one(user_payload)
+            await repository.add(user)
             await session.commit()
         except Exception as e:
             print(e)
             await session.rollback()
-
-
+            exit(1)
 
 
 def main():
     asyncio.run(create_admin())
+
 
 if __name__ == "__main__":
     main()
