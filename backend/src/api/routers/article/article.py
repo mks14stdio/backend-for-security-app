@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, Query
 
-from src.api.dependecy import ArticleServiceDep, GetUserDep, get_user, require_role
+from src.api.dependecy import ArticleServiceDep, GetUser, get_user, require_role
 from src.scheme.article import ArticleCreate, ArticleRead, ArticleUpdate
 from src.scheme.user import UserRole
 
@@ -11,12 +11,14 @@ def get_articles(limit: int = 10, offset: int = 0):
     return {"limit": limit, "offset": offset}
 
 
-router = APIRouter(prefix="/article", tags=["Статьи"], dependencies=[Depends(get_user)])
+router = APIRouter(
+    prefix="/articles", tags=["Статьи"], dependencies=[Depends(get_user)]
+)
 
 
 @router.post(
     "/",
-    dependencies=[require_role([UserRole.ADMIN, UserRole.EDITOR])],
+    dependencies=[require_role(UserRole.ADMIN, UserRole.EDITOR)],
     summary="Добавления статьи",
 )
 async def add_article(
@@ -27,7 +29,7 @@ async def add_article(
 
 @router.patch(
     "/{id}",
-    dependencies=[require_role([UserRole.ADMIN, UserRole.EDITOR])],
+    dependencies=[require_role(UserRole.ADMIN, UserRole.EDITOR)],
     summary="Обновление статьи по id",
 )
 async def update_article(
@@ -37,14 +39,14 @@ async def update_article(
 
 
 @router.post("/{id}/read", summary="Чтение статьи")
-async def mark_to_read(id: int, user: GetUserDep):
+async def mark_to_read(id: int, user: GetUser):
     ...
     # TODO: Claim XP form article ()
 
 
 @router.get(
     "/",
-    dependencies=[require_role([UserRole.ADMIN, UserRole.EDITOR])],
+    dependencies=[require_role(UserRole.ADMIN, UserRole.EDITOR)],
     summary="Получение списка статей",
 )
 async def get_all_article(
