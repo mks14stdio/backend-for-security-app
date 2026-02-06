@@ -1,11 +1,11 @@
 from fastapi import APIRouter
 
 from .routers import (
-    article,  # type: ignore
     auth,
     module,
     user,
 )
+from .routers.article import article, quiz
 
 main_router = APIRouter()
 main_router.include_router(auth.router)
