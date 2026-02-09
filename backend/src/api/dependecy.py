@@ -8,11 +8,12 @@ from src.database.db import create_session_db
 from src.models.users import User
 from src.repository.refresh_token_repository import RefreshTokenRepository
 from src.repository.user_repository import UserRepository
-from src.scheme.auth import TokenAuthPayLoad
-from src.scheme.user import UserRead, UserRole
+from src.scheme.user import UserRole
 from src.service.article_service import ArticleService
 from src.service.auth_service import AuthService
+from src.service.completion_service import CompletionService
 from src.service.module_service import ModuleService
+from src.service.quiz_service import QuizService
 from src.service.user_service import UserService
 
 SessionDep = Annotated[AsyncSession, Depends(create_session_db)]
@@ -52,13 +53,19 @@ security = HTTPBearer()
 SecurityDep = Annotated[HTTPAuthorizationCredentials, Depends(security)]
 
 
+def get_quiz_service(session: SessionDep):
+    return QuizService(session)
+
+
+QuizServiceDep = Annotated[QuizService, Depends(get_quiz_service)]
+
+
 async def get_user(token: SecurityDep, auth_service: AuthServiceDep) -> User:
     return await auth_service.get_currect_user(token.credentials)
 
 
 def require_role(*roles: UserRole):
     async def checker(user: User = Depends(get_user)) -> User:
-        print(user.role)
         if user.role not in roles:
             raise HTTPException(403, "Недостаточно прав")
         return user
@@ -69,3 +76,10 @@ def require_role(*roles: UserRole):
 GetUser = Annotated[User, Depends(get_user)]
 RequireEditor = Annotated[User, Depends(require_role(UserRole.EDITOR, UserRole.ADMIN))]
 RequireAdmin = Annotated[User, Depends(require_role(UserRole.ADMIN))]
+
+
+async def get_completion_service(session: SessionDep, user: GetUser):
+    return CompletionService(session, user)
+
+
+CompletionServiceDep = Annotated[CompletionService, Depends(get_completion_service)]
