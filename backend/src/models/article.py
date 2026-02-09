@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm.collections import mapped_collection
 
 from src.database.db import Base
 
@@ -23,11 +24,24 @@ class Article(Base):
         back_populates="article", uselist=False, lazy="noload"
     )
 
-    quiz: Mapped["QuizArticle"] = relationship(
-        back_populates="article", uselist=False, lazy="select"
+    quiz: Mapped["QuizArticle | None"] = relationship(
+        back_populates="article", uselist=False, lazy="selectin"
     )
 
     created_on: Mapped[datetime] = mapped_column(default=func.now())
     updated_on: Mapped[datetime] = mapped_column(
         default=func.now(), onupdate=func.now()
     )
+
+
+class UserArticleCompletion(Base):
+    __tablename__ = "user_article_completions"
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    article_id: Mapped[int] = mapped_column(
+        ForeignKey("articles.id", ondelete="CASCADE"), primary_key=True
+    )
+
+    completed_at: Mapped[datetime] = mapped_column(default=func.now())
