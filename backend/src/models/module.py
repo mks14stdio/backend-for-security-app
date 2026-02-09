@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, List
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database.db import Base
@@ -13,7 +13,7 @@ class Module(Base):
     __tablename__ = "modules"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    need_to_unlook: Mapped[int]
+    description: Mapped[str | None]
     title: Mapped[str]
 
     items: Mapped[List["ModuleItem"]] = relationship(
@@ -39,3 +39,5 @@ class ModuleItem(Base):
         ForeignKey("articles.id", ondelete="CASCADE")
     )
     order_index: Mapped[int]
+
+    __table_args__ = (UniqueConstraint("module_id", "order_index"),)
