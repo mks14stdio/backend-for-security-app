@@ -4,6 +4,7 @@ import jwt
 from fastapi import HTTPException
 from starlette import status
 
+from src.exception import AuthTokenError, NotFound
 from src.models.token import RefreshToken
 from src.models.users import User
 from src.repository.refresh_token_repository import RefreshTokenRepository
@@ -40,15 +41,14 @@ class AuthService:
 
         access_token = create_token(
             {
-                "sub": str(user.id),
+                "sub": user.email,
                 "role": user.role.value,
-                "email": user.email,
             },
             timedelta(minutes=5),
             TokenType.ACCESS_TOKEN,
         )
         refresh_token = create_token(
-            {"sub": str(user.id)}, timedelta(days=30), TokenType.REFRESH_TOKEN
+            {"sub": user.email}, timedelta(days=30), TokenType.REFRESH_TOKEN
         )
 
         await self.token_refresh_repository.add(RefreshToken(token=refresh_token))
@@ -61,10 +61,8 @@ class AuthService:
     async def refresh(self, refresh_token: RefreshSchema) -> TokenInfo:
         try:
             decoded_refresh_token = decode_token(refresh_token.refresh_token)
-        except jwt.InvalidTokenError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
-            )
+        except jwt.InvalidTokenError as e:
+            raise AuthTokenError(e)
 
         founded_refresh_token: (
             RefreshToken | None
@@ -75,15 +73,10 @@ class AuthService:
         )
 
         if not founded_refresh_token or not founded_user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Refresh token is not active or user doesnt exist",
-            )
+            raise AuthTokenError()
 
         if not founded_user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="User is not active"
-            )
+            raise NotFound(detail="Пользователь не активен")
 
         await self.token_refresh_repository.delete(founded_refresh_token)
 
@@ -99,7 +92,9 @@ class AuthService:
         new_refresh_token = create_token(
             {"sub": str(founded_user.id)}, timedelta(days=30), TokenType.REFRESH_TOKEN
         )
+
         await self.token_refresh_repository.add(RefreshToken(token=new_refresh_token))
+
         return TokenInfo(
             access_token=access_token,
             refresh_token=new_refresh_token,
@@ -108,16 +103,12 @@ class AuthService:
     async def get_currect_user(self, access_token: str) -> User:
         try:
             payload: dict[str, str] = decode_token(access_token)
-        except jwt.InvalidTokenError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
-            )
+        except jwt.InvalidTokenError as e:
+            raise AuthTokenError(e)
 
         user: User | None = await self.user_repository.find_by_email(payload["email"])
 
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
-            )
+            raise AuthTokenError()
 
         return user

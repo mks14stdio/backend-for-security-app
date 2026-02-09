@@ -4,6 +4,8 @@ from fastapi import HTTPException
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.database.db import transaction
+from src.exception import NotFound
 from src.models.article import Article
 from src.repository.article_repository import ArticleRepository
 from src.scheme.article import ArticleCreate, ArticleUpdate
@@ -15,14 +17,12 @@ class ArticleService:
         self.session: AsyncSession = session
 
     async def add(self, article: ArticleCreate) -> Article:
-        try:
-            new_article: Article = Article(title=article.title, content=article.content)
+        new_article: Article = Article(title=article.title, content=article.content)
+
+        async with transaction(self.session):
             await self.repository.add(new_article)
-            await self.session.commit()
-            return new_article
-        except Exception as e:
-            await self.session.rollback()
-            raise HTTPException(status_code=400, detail=str(e))
+
+        return new_article
 
     async def get_all(self, limit: int = 10, offset: int = 0) -> List[Article]:
         items = await self.repository.find_all(limit, offset)
@@ -32,39 +32,29 @@ class ArticleService:
         founded_article = await self.repository.find(id)
         if founded_article:
             return founded_article
-        raise HTTPException(status_code=404, detail="Статья не найдена")
+        raise Exception("Статья не найдена")
 
     async def delete(self, id: int):
-        try:
-            obj = await self.repository.find(id)
-            if not obj:
-                raise
+        obj = await self.repository.find(id)
+        if not obj:
+            raise NotFound(detail=f"Статья с {id}")
 
+        async with transaction(self.session):
             await self.repository.delete(obj)
-            await self.session.commit()
-            return {"message": "Статья удалена"}
-        except Exception as e:
-            await self.session.rollback()
-            raise HTTPException(status_code=404, detail=str(e))
+
+        return {"message": "Статья удалена"}
 
     async def update(self, id: int, article: ArticleUpdate) -> Article:
-        try:
-            article_to_update: Article | None = await self.repository.find(id)
+        article_to_update: Article | None = await self.repository.find(id)
 
-            if not article_to_update:
-                raise Exception()
+        if not article_to_update:
+            raise NotFound(detail=f"Статья с {id}")
 
-            if article.content:
-                article_to_update.content = article.content
-            if article.title:
-                article_to_update.title = article.title
+        article_to_update.content = article.content or article_to_update.content
+        article_to_update.title = article.title or article_to_update.title
 
-            await self.session.commit()
-            await self.session.refresh(article_to_update)
-            return article_to_update
-        except NoResultFound:
-            await self.session.rollback()
-            raise HTTPException(status_code=404, detail=f"Статья с id={id} не найдена")
-        except Exception as e:
-            await self.session.rollback()
-            raise HTTPException(status_code=400, detail=str(e))
+        async with transaction(self.session):
+            self.session.add(article_to_update)
+
+        await self.session.refresh(article_to_update)
+        return article_to_update
