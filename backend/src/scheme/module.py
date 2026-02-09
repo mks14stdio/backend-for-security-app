@@ -1,13 +1,6 @@
 from typing import List
 
-from pydantic import BaseModel, ConfigDict, Field
-
-
-class ModuleItemBase(BaseModel):
-    title: str
-    module_id: int
-    article_id: int
-    order_index: int = Field(..., ge=0)
+from pydantic import BaseModel, ConfigDict
 
 
 class ModuleItemCreate(BaseModel):
@@ -15,29 +8,41 @@ class ModuleItemCreate(BaseModel):
 
 
 class ModuleItemRead(BaseModel):
-    order_index: int
     article_id: int
+    title: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class ModuleBase(BaseModel):
+class ModuleCreate(BaseModel):
     title: str
-
-
-class ModuleCreate(ModuleBase):
-    need_to_xp: int
+    description: str | None = None
     items: List[ModuleItemCreate]
 
 
 class ModuleUpdate(BaseModel):
     title: str | None = None
+    description: str | None = None
+    items: List[ModuleItemCreate] | None = None
 
 
-class ModuleRead(ModuleBase):
+class ModuleInfoRead(BaseModel):
     id: int
     title: str
-    need_to_unlock: int
+    total: int
+    completed: int
+    description: str | None = None
+
+
+class ModuleRead(BaseModel):
+    id: int
+    title: str
+    description: str | None = None
     items: List[ModuleItemRead] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ModuleUserRead(ModuleRead):
+    total: int
+    completed: int
