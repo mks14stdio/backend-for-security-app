@@ -1,17 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api.router import main_router
+from .api import admin_router, user_router
 from .settings import settings
+
 app = FastAPI()
-app.include_router(main_router, prefix=settings.API_URL)
+app.include_router(user_router.router, prefix=settings.API_URL, tags=["Пользователь"])
+app.include_router(
+    admin_router.router, prefix=settings.API_URL, tags=["Админ/Редактор"]
+)
 
 origins = [
     "http://localhost",
     "http://localhost:5173",
-    "http://127.0.0.1:5173", 
+    "http://127.0.0.1:5173",
     "http://0.0.0.0:5173",
-    
 ]
 
 app.add_middleware(
@@ -22,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def root():
     return {"message": "ok"}
-
