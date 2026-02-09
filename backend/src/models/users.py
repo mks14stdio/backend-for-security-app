@@ -41,6 +41,8 @@ class UserProfile(Base):
     age: Mapped[int | None]
     gender: Mapped[UserGender | None] = mapped_column(SQLEnum(UserGender))
 
+    # xp: Mapped[int] = mapped_column(default=0)
+
     achievements: Mapped[list["AchievementUser"]] = relationship(
         back_populates="user", uselist=True
     )
