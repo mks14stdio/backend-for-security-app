@@ -23,3 +23,8 @@ class ArticleRead(ArticleBase):
     updated_on: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ArticleUserRead(ArticleRead):
+    is_read: bool
+    model_config = ConfigDict(from_attributes=True)
