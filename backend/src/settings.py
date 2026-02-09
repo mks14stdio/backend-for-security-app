@@ -21,10 +21,11 @@ class Settings(BaseSettings):
     PRIVATE_KEY_PATH: Path = BASE_DIR / "certs" / "private-key.pem"
     PUBLIC_KEY_PATH: Path = BASE_DIR / "certs" / "public-key.pem"
     JWT_ALGORITHM: str = "PS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # TODO: MAKE IT 5 minute
+
+    ACCESS_TOKEN_EXPIRE_MINUTES: int  # Зависит от окружения
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
-    TEST_TOKEN_EXPIRE_MUNUTES: int = 15
+    QUIZ_QUESTION_MINUTES_PER: int = 2
 
     API_URL: str = "/v1"
 
