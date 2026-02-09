@@ -40,6 +40,7 @@ RUN poetry install --no-root --with dev
 
 WORKDIR /app
 ENV ENV_TYPE=dev
+ENV ACCESS_TOKEN_EXPIRE_MINUTES=60
 ENV PYTHONPATH="/app:$PYTHONPATH"
 
 
@@ -50,6 +51,7 @@ FROM python-base AS production
 ENV ENV_TYPE=production
 
 COPY --from=builder $PYSETUP_PATH $PYSETUP_PATH
+ENV ACCESS_TOKEN_EXPIRE_MINUTES=5
 
 WORKDIR /app
 
