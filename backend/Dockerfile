@@ -51,5 +51,6 @@ COPY --from=builder $PYSETUP_PATH $PYSETUP_PATH
 
 WORKDIR /app
 
-COPY ./alembic.ini ./startup.sh ./src ./
+COPY ./alembic.ini ./startup.sh ./prestart.py ./
+COPY ./src ./src
 CMD ["fastapi", "run", "src.main:app"]
