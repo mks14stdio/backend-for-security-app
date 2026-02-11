@@ -16,7 +16,7 @@ services:
       - app-network
 
   prestart:
-    image: backend-swag:${BACKEND_TAG-latest}
+    image: ${BACKEND_REPO}/backend-swag:${BACKEND_TAG-latest}
     build:
       context: ./backend
     command: bash ./startup.sh
