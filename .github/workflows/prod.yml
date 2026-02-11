@@ -50,8 +50,8 @@ jobs:
             export ADMIN_PASSWORD="${{ secrets.PROD_ADMIN_PASSWORD }}"
             export ADMIN_EMAIL="${{ secrets.ADMIN_EMAIL }}"
             export BACKEND_PORT=8000
-            export JWT_PRIVATE="${{ secrets.PROD_JWT_KEYPRIVATE }}"
-            export JWT_PUBLIC="${{ secrets.PROD_JWT_KEYPUBLIC }}"
+            export JWT_PRIVATE_KEY="${{ secrets.PROD_JWT_KEYPRIVATE }}"
+            export JWT_PUBLIC_KEY="${{ secrets.PROD_JWT_KEYPUBLIC }}"
             export BACKEND_TAG=prod-${{ github.sha }}
             export BACKEND_REPO="${{ secrets.DOCKER_USERNAME }}"
 
