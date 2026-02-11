@@ -53,4 +53,4 @@ WORKDIR /app
 
 COPY ./alembic.ini ./startup.sh ./prestart.py ./
 COPY ./src ./src
-CMD ["fastapi", "run", "src.main:app"]
+CMD ["fastapi", "run", "src/main.py"]
