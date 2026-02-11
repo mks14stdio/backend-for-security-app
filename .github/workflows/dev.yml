@@ -55,4 +55,5 @@ jobs:
             export BACKEND_TAG=dev-${{ github.sha }}
             export BACKEND_REPO="${{ secrets.DOCKER_USERNAME }}"
 
+
             docker compose -p dev down && docker compose -p dev pull && docker compose -p dev up -d --remove-orphans

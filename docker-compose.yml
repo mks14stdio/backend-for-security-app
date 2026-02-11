@@ -25,6 +25,7 @@ services:
         condition: service_healthy
         restart: true
     environment:
+      ENV_TYPE: ${ENV_TYPE-local}
       DB_USER: "${DB_USER?Var not set}"
       DB_PASSWORD: "${DB_PASSWORD?Var not set}"
       DB_HOST: "db"
