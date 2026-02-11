@@ -24,6 +24,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/backend-swag:dev-${{ github.sha }}
   deploy:
+    needs: build
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
@@ -44,14 +45,14 @@ jobs:
           key: ${{ secrets.SERVER_SSHKEY }}
           script: |
             cd ~/dev
-            export ENV_TYPE=dev
-            export DB_PASSWORD=${{ secrets.DEV_POSTGRESS_PASSWORD }}
-            export ADMIN_PASSWORD=${{ secrets.DEV_ADMIN_PASSWORD }}
-            export ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
-            export BACKEND_PORT=8080
-            export JWT_PRIVATE=${{ secrets.DEV_JWT_KEYPRIVATE }}
-            export JWT_PUBLIC=${{ secrets.DEV_JWT_KEYPUBLIC }}
+            export ENV_TYPE="dev"
+            export DB_PASSWORD="${{ secrets.DEV_POSTGRESS_PASSWORD }}"
+            export ADMIN_PASSWORD="${{ secrets.DEV_ADMIN_PASSWORD }}"
+            export ADMIN_EMAIL="${{ secrets.ADMIN_EMAIL }}"
+            export BACKEND_PORT="8080"
+            export JWT_PRIVATE="${{ secrets.DEV_JWT_KEYPRIVATE }}"
+            export JWT_PUBLIC="${{ secrets.DEV_JWT_KEYPUBLIC }}"
             export BACKEND_TAG=dev-${{ github.sha }}
-            export BACKEND_REPO=${{ secrets.DOCKER_USERNAME }}
+            export BACKEND_REPO="${{ secrets.DOCKER_USERNAME }}"
 
             docker compose -p dev down && docker compose -p dev pull && docker compose -p dev up -d --remove-orphans

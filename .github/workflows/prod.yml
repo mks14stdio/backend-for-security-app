@@ -24,6 +24,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/backend-swag:prod-${{ github.sha }}
   deploy:
+    needs: build
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
@@ -44,14 +45,14 @@ jobs:
           key: ${{ secrets.SERVER_SSHKEY }}
           script: |
             cd ~/prod
-            export ENV_TYPE=production
-            export DB_PASSWORD=${{ secrets.PROD_POSTGRESS_PASSWORD }}
-            export ADMIN_PASSWORD=${{ secrets.PROD_ADMIN_PASSWORD }}
-            export ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
+            export ENV_TYPE="production"
+            export DB_PASSWORD="${{ secrets.PROD_POSTGRESS_PASSWORD }}"
+            export ADMIN_PASSWORD="${{ secrets.PROD_ADMIN_PASSWORD }}"
+            export ADMIN_EMAIL="${{ secrets.ADMIN_EMAIL }}"
             export BACKEND_PORT=8000
-            export JWT_PRIVATE=${{ secrets.PROD_JWT_KEYPRIVATE }}
-            export JWT_PUBLIC=${{ secrets.PROD_JWT_KEYPUBLIC }}
+            export JWT_PRIVATE="${{ secrets.PROD_JWT_KEYPRIVATE }}"
+            export JWT_PUBLIC="${{ secrets.PROD_JWT_KEYPUBLIC }}"
             export BACKEND_TAG=prod-${{ github.sha }}
-            export BACKEND_REPO=${{ secrets.DOCKER_USERNAME }}
+            export BACKEND_REPO="${{ secrets.DOCKER_USERNAME }}"
 
             docker compose -p prod down && docker compose -p prod pull && docker compose -p prod up -d --remove-orphans
