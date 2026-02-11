@@ -26,11 +26,11 @@ RUN apt-get update \
 
 COPY ./poetry.lock ./pyproject.toml ./
 
-
 RUN pip install --target $POETRY_HOME "poetry==$POETRY_VERSION"
 RUN poetry install --no-root --only main
 
-FROM python-base AS dev
+
+FROM python-base AS local
 
 WORKDIR $PYSETUP_PATH
 
@@ -39,23 +39,17 @@ COPY --from=builder $POETRY_HOME $POETRY_HOME
 RUN poetry install --no-root --with dev
 
 WORKDIR /app
-ENV ENV_TYPE=dev
-ENV ACCESS_TOKEN_EXPIRE_MINUTES=60
-ENV PYTHONPATH="/app:$PYTHONPATH"
-
-
 EXPOSE 8000
+
+COPY . .
+
 CMD ["uvicorn", "--host", "0.0.0.0", "--reload", "src.main:app"]
 
 FROM python-base AS production
-ENV ENV_TYPE=production
 
 COPY --from=builder $PYSETUP_PATH $PYSETUP_PATH
-ENV ACCESS_TOKEN_EXPIRE_MINUTES=5
 
 WORKDIR /app
 
-COPY ./alembic.ini ./
-COPY ./startup.sh ./startup.sh
-COPY ./src ./src
-CMD ["uvicorn", "src.main:app"]
+COPY ./alembic.ini ./startup.sh ./src ./
+CMD ["fastapi", "run", "src.main:app"]

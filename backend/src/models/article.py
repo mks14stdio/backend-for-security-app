@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.orm.collections import mapped_collection
 
@@ -17,7 +17,7 @@ class Article(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    title: Mapped[str] = mapped_column()
+    title: Mapped[str] = mapped_column(String(256))
     content: Mapped[str] = mapped_column()
 
     module_item: Mapped["ModuleItem"] = relationship(

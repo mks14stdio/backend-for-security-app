@@ -3,8 +3,10 @@ from typing import Annotated, Any
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.status import HTTP_401_UNAUTHORIZED
 
 from src.database.db import create_session_db
+from src.exception import AuthTokenError
 from src.models.users import User
 from src.repository.refresh_token_repository import RefreshTokenRepository
 from src.repository.user_repository import UserRepository
@@ -61,7 +63,10 @@ QuizServiceDep = Annotated[QuizService, Depends(get_quiz_service)]
 
 
 async def get_user(token: SecurityDep, auth_service: AuthServiceDep) -> User:
-    return await auth_service.get_currect_user(token.credentials)
+    try:
+        return await auth_service.get_currect_user(token.credentials)
+    except AuthTokenError as e:
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail=str(e))
 
 
 def require_role(*roles: UserRole):

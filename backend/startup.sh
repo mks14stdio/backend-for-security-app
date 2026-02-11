@@ -5,5 +5,4 @@ set -x
 
 # Alembic migration
 alembic upgrade head
-
 python ./prestart.py

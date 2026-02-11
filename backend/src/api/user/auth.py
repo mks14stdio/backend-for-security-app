@@ -1,6 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from starlette.status import HTTP_401_UNAUTHORIZED
 
 from src.api.dependecy import AuthServiceDep, UserServiceDep
+from src.exception import AuthTokenError
 from src.scheme.auth import LoginSchema, RefreshSchema, RegisterSchema, TokenInfo
 from src.scheme.user import UserRead
 
@@ -14,7 +16,10 @@ async def login(auth_service: AuthServiceDep, login: LoginSchema) -> TokenInfo:
 
 @router.post("/refresh/", summary="Обновление токена")
 async def refresh(refresh_token: RefreshSchema, auth_service: AuthServiceDep):
-    return await auth_service.refresh(refresh_token)
+    try:
+        return await auth_service.refresh(refresh_token)
+    except AuthTokenError as e:
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail=str(e))
 
 
 @router.post("/register/", summary="Регистрация")

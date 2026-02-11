@@ -60,6 +60,7 @@ class QuizRead(BaseModel):
 
 
 class AnswerUserRead(BaseModel):
+    id: int
     text: str
     model_config = {"from_attributes": True}
 

@@ -10,6 +10,7 @@ from src.models.users import User
 from src.repository.refresh_token_repository import RefreshTokenRepository
 from src.repository.user_repository import UserRepository
 from src.scheme.auth import RefreshSchema
+from src.settings import settings
 
 from ..scheme.auth import LoginSchema, TokenInfo
 from ..security import TokenType, create_token, decode_token, verify_password
@@ -64,12 +65,15 @@ class AuthService:
         except jwt.InvalidTokenError as e:
             raise AuthTokenError(e)
 
+        if decoded_refresh_token["type"] != TokenType.REFRESH_TOKEN.value:
+            raise AuthTokenError()
+
         founded_refresh_token: (
             RefreshToken | None
         ) = await self.token_refresh_repository.get(refresh_token.refresh_token)
 
         founded_user: User | None = await self.user_repository.find_by_email(
-            decoded_refresh_token["email"]
+            decoded_refresh_token["sub"]
         )
 
         if not founded_refresh_token or not founded_user:
@@ -82,15 +86,16 @@ class AuthService:
 
         access_token = create_token(
             {
-                "sub": str(founded_user.id),
+                "sub": founded_user.email,
                 "role": founded_user.role.value,
-                "email": founded_user.email,
             },
-            timedelta(minutes=5),
+            timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
             TokenType.ACCESS_TOKEN,
         )
         new_refresh_token = create_token(
-            {"sub": str(founded_user.id)}, timedelta(days=30), TokenType.REFRESH_TOKEN
+            {"sub": founded_user.email},
+            timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+            TokenType.REFRESH_TOKEN,
         )
 
         await self.token_refresh_repository.add(RefreshToken(token=new_refresh_token))
@@ -106,7 +111,10 @@ class AuthService:
         except jwt.InvalidTokenError as e:
             raise AuthTokenError(e)
 
-        user: User | None = await self.user_repository.find_by_email(payload["email"])
+        if payload["type"] != TokenType.ACCESS_TOKEN.value:
+            raise AuthTokenError(Exception(f"TokenType is {payload['type']}"))
+
+        user: User | None = await self.user_repository.find_by_email(payload["sub"])
 
         if not user:
             raise AuthTokenError()

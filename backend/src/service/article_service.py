@@ -1,7 +1,5 @@
 from typing import List
 
-from fastapi import HTTPException
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import transaction

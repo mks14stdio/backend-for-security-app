@@ -6,32 +6,27 @@ from src.models.users import User, UserProfile
 from src.repository.user_repository import UserRepository
 from src.scheme.user import UserRole
 from src.security import get_password_hash
+from src.settings import settings
 
 
 async def create_admin():
-    admin_email: str | None = os.getenv("ADMIN_EMAIL")
-    admin_password: str | None = os.getenv("ADMIN_PASSWORD")
 
-    if not admin_email or not admin_password:
-        print(f"ADMIN EMAIL {admin_email} PASSWORD {admin_password}")
-        exit(1)
-
-    admin_hashed = get_password_hash(admin_password)
+    admin_hashed = get_password_hash(settings.ADMIN_PASSWORD)
 
     async with async_session() as session:
         repository: UserRepository = UserRepository(session)
-        user = await repository.find_by_email(admin_email)
+        user = await repository.find_by_email(settings.ADMIN_EMAIL)
 
         if user:
             print("Admin alredy exsist")
             exit(0)
 
         user = User()
-        user.email = admin_email
+        user.email = settings.ADMIN_EMAIL
         user.hashed_password = admin_hashed
         user.profile = UserProfile()
-        user.profile.first_name = "Denis"
-        user.profile.last_name = "Sova"
+        user.profile.first_name = "Admin"
+        user.profile.last_name = "Admin"
 
         try:
             await repository.add(user)

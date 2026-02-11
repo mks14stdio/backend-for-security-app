@@ -81,7 +81,10 @@ class CompletionService:
             .order_by(func.random())
             .limit(quiz.question_count)
         )
-        questions: list[Question] = list(await self.session.scalars(stmt))
+
+        result = await self.session.execute(stmt)
+
+        questions: list[Question] = list(result.unique().scalars().all())
 
         minutes = settings.QUIZ_QUESTION_MINUTES_PER * quiz.question_count
 
@@ -94,7 +97,9 @@ class CompletionService:
         )
 
         attempt: QuizAttempt = QuizAttempt(
-            token=session_token, count=quiz.question_count
+            token=session_token,
+            question_count=quiz.question_count,
+            article_pk=article_id,
         )
         attempt.questions = [
             QuizAttemptQuestion(question_pk=q.id, order_index=index)

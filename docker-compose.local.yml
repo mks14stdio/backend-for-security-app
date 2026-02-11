@@ -1,0 +1,20 @@
+services:
+  db:
+    restart: no
+    ports:
+      - "${DB_PORT-5432}:${DB_PORT-5432}"
+
+  backend:
+    build:
+      context: ./backend
+      target: local
+    command: ["uvicorn", "--host", "0.0.0.0", "--reload", "src.main:app"]
+    develop:
+      watch:
+        - path: ./backend
+          action: sync
+          target: /app
+        - path: ./backend/pyproject.toml
+          action: rebuild
+    ports:
+      - "8000:8000"
