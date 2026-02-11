@@ -35,7 +35,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: github
           key: ${{ secrets.SERVER_SSHKEY }}
-          source: ".env,docker-compose.yml"
+          source: "./.env,docker-compose.yml"
           target: "~/prod"
       - name: Deploy in server
         uses: appleboy/ssh-action@v1
