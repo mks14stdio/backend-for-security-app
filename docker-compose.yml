@@ -1,6 +1,6 @@
 services:
   pgadmin:
-    image: dpage/pgadmin4-latest
+    image: dpage/pgadmin4:latest
     environment:
       PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL?Var not set}
       PGADMIN_DEFAULT_PASSWORD: ${ADMIN_PASSWORD?Var not set}
