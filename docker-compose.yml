@@ -1,4 +1,16 @@
 services:
+  pgadmin:
+    image: dpage/pgadmin4-latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL?Var not set}
+      PGADMIN_DEFAULT_PASSWORD: ${ADMIN_PASSWORD?Var not set}
+    env_file:
+      - .env
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+
   db:
     image: postgres:16
     environment:
@@ -25,7 +37,7 @@ services:
         condition: service_healthy
         restart: true
     environment:
-      ENV_TYPE: ${ENV_TYPE-local}
+      ENV_TYPE: "${ENV_TYPE-local}"
       DB_USER: "${DB_USER?Var not set}"
       DB_PASSWORD: "${DB_PASSWORD?Var not set}"
       DB_HOST: "db"
