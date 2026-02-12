@@ -45,6 +45,7 @@ jobs:
           key: ${{ secrets.SERVER_SSHKEY }}
           script: |
             cd ~/prod
+            export DB_VOLUME=pg_data
             export ENV_TYPE="production"
             export DB_PASSWORD="${{ secrets.PROD_POSTGRESS_PASSWORD }}"
             export ADMIN_PASSWORD="${{ secrets.PROD_ADMIN_PASSWORD }}"

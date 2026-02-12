@@ -24,11 +24,13 @@ services:
       retries: 5
     env_file:
       - .env
+    volumes:
+      - ${DB_VOLUME:-/dev/null}:${DB_VOLUME:+/var/lib/postgresql/data}${DB_VOLUME:-/also/this}
     networks:
       - app-network
 
   prestart:
-    image: ${BACKEND_REPO}/backend-swag:${BACKEND_TAG-latest}
+    image: ${BACKEND_REPO:-localhost}/backend-swag:${BACKEND_TAG-latest}
     build:
       context: ./backend
     command: bash ./startup.sh
@@ -53,7 +55,7 @@ services:
       - app-network
 
   backend:
-    image: ${BACKEND_REPO}/backend-swag:${BACKEND_TAG-latest}
+    image: ${BACKEND_REPO:-localhost}/backend-swag:${BACKEND_TAG-latest}
     build:
       context: ./backend
     depends_on:
@@ -65,6 +67,7 @@ services:
     ports:
       - "${BACKEND_PORT?Var not set}:8000"
     environment:
+      ENV_TYPE: "${ENV_TYPE:-local}"
       DB_USER: "${DB_USER?Var not set}"
       DB_PASSWORD: "${DB_PASSWORD?Var not set}"
       DB_HOST: "db"
